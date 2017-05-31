@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * @file
+ * AJAX Examples install file schema for mymodule_form_node_form_alter()
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function mymodule_schema() {
+  $schema['mymodule_transactions'] = array(
+    'description' => 'Stores transactions for p2p payments',
+    'fields' => array(
+      'id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid to store settings.',
+      ),
+      'transact_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'transact_id',
+      ),  
+      'amount' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'sum of transaction',
+      ),  
+        
+      'sender_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Sender of trancsaction',
+      ),
+      'reciever_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Reciever of trancsaction',
+      ),  
+      
+      'created_at' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'date1',
+      ),
+      'updated_at' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'date2',
+      ),  
+        
+      'status' => array(
+        'type' => 'varchar',
+        'length' => 256,
+        'not null' => FALSE,
+        'default' => '',
+        'description' => 'Status',
+      ),
+    ),
+    'primary key' => array('id'),
+    'foreign keys' => array(
+      'mymodule_users_sender_id_pk' => array(
+        'table' => 'users',
+        'columns' => array('sender_id' => 'uid'),
+      ),
+      'mymodule_users_reciever_id_pk' => array(
+        'table' => 'users',
+        'columns' => array('reciever_id' => 'uid'),
+      ),
+    ),
+  );
+  return $schema;
+}
+

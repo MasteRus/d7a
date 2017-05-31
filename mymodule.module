@@ -1,0 +1,245 @@
+<?php
+
+/**
+ * @file
+ * AJAX Examples module file with basic examples.
+ */
+
+
+module_load_include('inc', 'mymodule', 'mymodule_node_form_alter');
+
+/**
+ * Implements hook_menu().
+ *
+ * Sets up calls to drupal_get_form() for all our example cases.
+ *
+ * @see menu_example.module
+ * @see menu_example_menu()
+ */
+function mymodule_menu() {
+  $items = array();
+
+  $items['mymodule'] = array(
+    'title' => 'AJAX Example',
+    'page callback' => 'mymodule_show_transactions',
+    'access callback' => TRUE,
+    'expanded' => TRUE,
+  );
+
+  // Change the description of a form element.
+  $items['mymodule/send-money'] = array(
+    'title' => 'Simplest AJAX Example',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mymodule_send_money'),
+    'access callback' => TRUE,
+    'weight' => 0,
+  );
+  
+  // This is the callback route for the AJAX-based progress bar.
+  /*
+  $items['mymodule/progressbar/progress/%'] = array(
+    'title' => 'Progress bar progress',
+    'page callback' => 'mymodule_progressbar_progress',
+    'page arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+    'file' => 'mymodule_progressbar.inc',
+  );
+*/
+  return $items;
+}
+
+function mymodule_show_transactions()
+{
+    /*
+     $nid = db_select('mymodule_transactions') // Table name no longer needs {}
+        ->fields(array(
+          'amount' => $form_data['values']['amount'],
+          'sender_id' => $user->uid,
+          'reciever_id' => $form_data['values']['reciever_id'],
+          'created_at' => time(),
+          'updated_at' => time(),
+          'status' => 'NOT FINISHED', 
+        ))
+        ->execute();
+     */
+    
+ 
+  // We are going to output the results in a table with a nice header.
+  $header = array(
+    // The header gives the table the information it needs in order to make
+    // the query calls for ordering. TableSort uses the field information
+    // to know what database column to sort by.
+    array('data' => t('id'), 'field' => 'id'),  
+    array('data' => t('transact_id'), 'field' => 'transact_id'),  
+    array('data' => t('amount'), 'field' => 'amount'),
+    array('data' => t('Sender'), 'field' => 'sender_id'),
+    array('data' => t('Reciever'), 'field' => 'reciever_id'),
+    array('data' => t('created_at'), 'field' => 'created_at'),
+    array('data' => t('updated_at'), 'field' => 'updated_at'),
+    array('data' => t('status'), 'field' => 'status'),
+  );
+  /*
+   *     $query = db_select('mymodule_transactions', 'm')->extend('TableSort')
+      ;
+            $query->fields('m', array('id','transact_id','amount','created_at','updated_at','status'))
+            ->fields('u1', array('name'))
+            ->fields('u1', array('name'))
+        ->innerJoin('users', 'u1', 'm.sender_id = u1.uid')    
+        ->innerJoin('users', 'u2', 'm.reciever_id= u2.uid');
+   * 
+   */
+  /*
+    $query = db_select('mymodule_transactions', 'm')
+      ->extend('TableSort')
+      ;
+  $query->fields('m');
+*/
+  // Don't forget to tell the query object how to find the header information.
+  $result = $query
+      ->orderByHeader($header)
+      ->execute();
+  // Using the TableSort Extender is what tells the query object that we are
+  // sorting.
+  
+
+  $rows = array();
+  foreach ($result as $row) {
+    // Normally we would add some nice formatting to our rows
+    // but for our purpose we are simply going to add our row
+    // to the array.
+    $rows[] = array('data' => (array) $row);
+  }
+
+  // Build the table for the nice output.
+  $build['tablesort_table'] = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+  );
+
+  return $build;
+}
+    
+    
+
+
+/**
+ * Basic AJAX callback example.
+ *
+ * Simple form whose ajax-enabled 'changethis' member causes a text change
+ * in the description of the 'replace_textfield' member.
+ *
+ * See @link http://drupal.org/node/262422 Form API Tutorial @endlink
+ */
+function mymodule_send_money($form, &$form_state) {
+  $form = array();
+  global $user;
+$all_users = entity_load('user');
+foreach($all_users as $value) {
+  $user_list = (array)$value;
+  if ($user_list['uid']!=$user->uid)
+    $users[$user_list['uid']] = $user_list['name'];
+}
+$form['reciever_id'] = array(
+    '#title' => t("Choose the reciever of your transaction"),
+    '#type' => 'select',
+    '#options' => $users,
+    '#validated' => TRUE,
+  );
+$form['sender_id'] = array(
+    '#title' => t("Choose something and explain why"),
+    '#type' => 'hidden',
+    //'#options' => $user->uid,
+    
+  );
+
+$form['amount'] = array(
+    '#title' => t("Sum of transaction"),
+    '#type' => 'textfield',
+    //'#options' => $user->uid,
+    
+  );
+
+function mymodule_send_money_submit($form_id, &$form_data)  {
+  global $user;
+
+  $nid = db_insert('mymodule_transactions') // Table name no longer needs {}
+        ->fields(array(
+          'amount' => $form_data['values']['amount'],
+          'sender_id' => $user->uid,
+          'reciever_id' => $form_data['values']['reciever_id'],
+          'created_at' => time(),
+          'updated_at' => time(),
+          'status' => 'NOT FINISHED', 
+        ))
+        ->execute();
+  
+  drupal_set_message(t('Information has been saved to the database'));
+  } 
+/*
+'id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid to store settings.',
+      ),
+      'transact_id' => array(
+        'type' => 'string',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'transact_id',
+      ),  
+        
+ * 
+ */
+ $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+  // This entire form element will be replaced whenever 'changethis' is updated.
+  
+  return $form;
+}
+
+
+function calculator_page_form_validate($form, &$form_state) {
+
+    /*
+ if (!is_numeric($form_state['values']['number1'])) {
+    form_set_error('number1', t('Value in field "Number 1" is wrong.'));
+  }
+ if (!is_numeric($form_state['values']['number2'])) {
+    form_set_error('number2', t('Value in field "Number 2" is wrong.'));
+  }
+     * 
+     */
+}
+/**
+ * Callback for mymodule_simplest.
+ *
+ * On an ajax submit, the form builder function is called again, then the $form
+ * and $form_state are passed to this callback function so it can select which
+ * portion of the form to send on to the client.
+ *
+ * @return array
+ *   Renderable array (the textfield element)
+ */
+function mymodule_simplest_callback($form, $form_state) {
+  // The form has already been submitted and updated. We can return the replaced
+  // item as it is.
+  return $form['replace_textfield'];
+}
+
+/**
+ * Form manipulation through AJAX.
+ *
+ * AJAX-enabled select element causes replacement of a set of checkboxes
+ * based on the selection.
+ */
+
+
+/**
+ * @} End of "defgroup mymodule".
+ */
