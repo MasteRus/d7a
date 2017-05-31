@@ -89,12 +89,12 @@ function mymodule_show_transactions()
         ->innerJoin('users', 'u2', 'm.reciever_id= u2.uid');
    * 
    */
-  /*
+  
     $query = db_select('mymodule_transactions', 'm')
       ->extend('TableSort')
       ;
   $query->fields('m');
-*/
+
   // Don't forget to tell the query object how to find the header information.
   $result = $query
       ->orderByHeader($header)
