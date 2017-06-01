@@ -75,11 +75,9 @@ function mymodule_show_transactions()
     array('data' => t('id'), 'field' => 'n.id'),  
     array('data' => t('transact_id'), 'field' => 'transact_id'),  
     array('data' => t('amount'), 'field' => 'amount'),
-
+    array('data' => t('status'), 'field' => 'status'),
     array('data' => t('created_at'), 'field' => 'created_at'),
     array('data' => t('updated_at'), 'field' => 'updated_at'),
-    array('data' => t('status'), 'field' => 'status'),
-
   );
   
    $query = db_select('mymodule_transactions', 'm');
@@ -88,7 +86,10 @@ function mymodule_show_transactions()
     $query->innerJoin('users', 'u2', 'm.reciever_id= u2.uid');
     $query->fields('u1', ['name']);
     $query->fields('u2', ['name']);
-    $query->fields('m', ['id','transact_id','amount','created_at','updated_at','status']);
+    $query->fields('m', ['id','transact_id','amount']);
+    $query->addExpression("DATE_FORMAT(FROM_UNIXTIME(created_at), '%d.%m.%Y %H:%i')", 'created_at');
+    $query->addExpression("DATE_FORMAT(FROM_UNIXTIME(updated_at), '%d.%m.%Y %H:%i')", 'updated_at');
+    $query->fields('m', ['status']);
     
   /*
     $query = db_select('mymodule_transactions', 'm')
@@ -111,7 +112,7 @@ function mymodule_show_transactions()
     $rows[] = array('data' => (array) $row);
   }
 
-  // Build the table for the nice output.
+  // Build the table for the nice outpaut.
   $build['tablesort_table'] = array(
     '#theme' => 'table',
     '#header' => $header,
