@@ -13,10 +13,10 @@ function mymodule_schema() {
     'description' => 'Stores transactions for p2p payments',
     'fields' => array(
       'id' => array(
-        'type' => 'int',
+        'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
+        //'default' => 0,
         'description' => 'The {node}.nid to store settings.',
       ),
       'transact_id' => array(

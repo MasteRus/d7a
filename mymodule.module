@@ -70,38 +70,38 @@ function mymodule_show_transactions()
     // The header gives the table the information it needs in order to make
     // the query calls for ordering. TableSort uses the field information
     // to know what database column to sort by.
-    array('data' => t('id'), 'field' => 'id'),  
-    array('data' => t('transact_id'), 'field' => 'transact_id'),  
-    array('data' => t('amount'), 'field' => 'amount'),
     array('data' => t('Sender'), 'field' => 'sender_id'),
     array('data' => t('Reciever'), 'field' => 'reciever_id'),
+    array('data' => t('id'), 'field' => 'n.id'),  
+    array('data' => t('transact_id'), 'field' => 'transact_id'),  
+    array('data' => t('amount'), 'field' => 'amount'),
+
     array('data' => t('created_at'), 'field' => 'created_at'),
     array('data' => t('updated_at'), 'field' => 'updated_at'),
     array('data' => t('status'), 'field' => 'status'),
+
   );
-  /*
-   *     $query = db_select('mymodule_transactions', 'm')->extend('TableSort')
-      ;
-            $query->fields('m', array('id','transact_id','amount','created_at','updated_at','status'))
-            ->fields('u1', array('name'))
-            ->fields('u1', array('name'))
-        ->innerJoin('users', 'u1', 'm.sender_id = u1.uid')    
-        ->innerJoin('users', 'u2', 'm.reciever_id= u2.uid');
-   * 
-   */
   
+   $query = db_select('mymodule_transactions', 'm');
+//            
+    $query->innerJoin('users', 'u1', 'm.sender_id = u1.uid');    
+    $query->innerJoin('users', 'u2', 'm.reciever_id= u2.uid');
+    $query->fields('u1', ['name']);
+    $query->fields('u2', ['name']);
+    $query->fields('m', ['id','transact_id','amount','created_at','updated_at','status']);
+    
+  /*
     $query = db_select('mymodule_transactions', 'm')
       ->extend('TableSort')
       ;
   $query->fields('m');
-
+*/
   // Don't forget to tell the query object how to find the header information.
-  $result = $query
-      ->orderByHeader($header)
-      ->execute();
-  // Using the TableSort Extender is what tells the query object that we are
-  // sorting.
-  
+    $result = $query->extend('TableSort')
+        //->orderByHeader($header)
+        ->execute();
+
+    
 
   $rows = array();
   foreach ($result as $row) {
